@@ -1,4 +1,9 @@
 #!/usr/bin/env bash
+
+if [ -z "${BASH_VERSION:-}" ]; then
+  exec /usr/bin/env bash "$0" "$@"
+fi
+
 set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
 VENV_PATH="${VENV_PATH:-$ROOT_DIR/.venv}"
