@@ -4,3 +4,6 @@ __pycache__/
 *.sqlite3
 venv/
 node_modules/
+
+.next/
+out/
