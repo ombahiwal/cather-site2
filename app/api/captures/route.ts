@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { buildRiskAlerts } from '@/lib/alerts';
 import { calculateRiskSnapshot, type PatientFactorFlags, type SafetyChecklist } from '@/lib/riskEngine';
+import { analyzeCatheterImage } from '@/lib/gemini';
 
 export async function POST(request: Request) {
   const body = await request.json();
@@ -50,6 +51,8 @@ export async function POST(request: Request) {
   const patientFactors = patient.patientFactors as unknown as PatientFactorFlags;
   const safetyChecklist = patient.safetyChecklist as unknown as SafetyChecklist;
 
+  const aiSignals = await analyzeCatheterImage(body.catheterImageUrl);
+
   const computation = calculateRiskSnapshot({
     insertionDate: patient.insertionDate,
     patientFactors,
@@ -59,6 +62,7 @@ export async function POST(request: Request) {
     dressingChanged: shiftEvents.dressingChanged,
     catheterChanged: shiftEvents.catheterChanged,
     flushingDone: shiftEvents.flushingDone
+    signals: aiSignals ?? undefined
   });
 
   const riskSnapshot = await db.riskSnapshot.create({
@@ -79,7 +83,8 @@ export async function POST(request: Request) {
     predictiveVenousResistanceBand: computation.predictiveVenousResistanceBand,
     tractionPullsRed: computation.tractionPullsRed,
     tractionPullsYellow: computation.tractionPullsYellow,
-    dressingFailure: !safetyChecklist?.dressingIntact
+    dressingFailure:
+      !safetyChecklist?.dressingIntact || (aiSignals?.dressingLift ?? 0) > 30 || Boolean(aiSignals?.maceration)
   });
 
   if (alerts.length) {
@@ -98,5 +103,5 @@ export async function POST(request: Request) {
     );
   }
 
-  return NextResponse.json({ catheterCapture, tractionCapture, riskSnapshot });
+  return NextResponse.json({ catheterCapture, tractionCapture, riskSnapshot, aiSignals });
 }

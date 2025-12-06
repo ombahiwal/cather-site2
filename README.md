@@ -12,10 +12,14 @@ Hospital-grade, mobile-first catheter surveillance workflow built with Next.js A
 
 2. **Configure environment**
 
-	Create `.env` with your MySQL connection:
+	Create `.env` with your MySQL connection and Gemini API key:
 
 	```bash
 	DATABASE_URL="mysql://USER:PASSWORD@HOST:PORT/DATABASE"
+	GEMINI_API_KEY="your_google_generative_ai_key"
+	# Optional overrides
+	# GEMINI_MODEL="gemini-1.5-pro-latest"
+	# GEMINI_API_URL="https://generativelanguage.googleapis.com/v1beta/models/...:generateContent"
 	```
 
 3. **Create & seed the database**
@@ -45,13 +49,13 @@ Hospital-grade, mobile-first catheter surveillance workflow built with Next.js A
 - `app/` - App Router routes for each workflow step plus API handlers under `app/api/**` (Vercel-ready serverless functions).
 - `components/` - Mobile-first UI primitives (cards, nav, modals, trend chart, alerts).
 - `context/WorkflowContext.tsx` - Enforces sequential workflow state, persisted in localStorage.
-- `lib/` - Prisma client, deterministic risk engine, alert helpers, fetch utilities.
+- `lib/` - Prisma client, deterministic risk engine, Gemini helper, alert utilities.
 - `prisma/` - Database schema + `seed.ts` for mock operational data.
 - `public/audio/` - Placeholder consent audio assets (replace with validated recordings before production).
 
 ## Risk & analytics logic
 
-- `lib/riskEngine.ts` contains deterministic heuristics for CLISA, traction, patient/systemic factors, and dwell time. Replace the TODO sections with AI/vision outputs when available.
+- `lib/riskEngine.ts` contains deterministic heuristics for CLISA, traction, patient/systemic factors, and dwell time; it now consumes signals returned by `lib/gemini.ts` whenever a `GEMINI_API_KEY` is configured.
 - `lib/alerts.ts` derives CLABSI / venous / traction / dressing / resource alerts and feeds `/api/alerts`.
 - `app/api/dashboard`, `app/api/ward-metrics`, and `app/api/resource-metrics` expose REST endpoints consumed via SWR on mobile screens.
 
