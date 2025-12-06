@@ -15,7 +15,10 @@ const config: Config = {
           DEFAULT: '#0f766e',
           dark: '#115e59'
         },
-        medical: '#1d4ed8',
+        medical: '#1554c3',
+        medicalDark: '#0f3f93',
+        skyglass: '#dbeafe',
+        deepSky: '#0e7490',
         risk: {
           green: '#16a34a',
           yellow: '#ca8a04',

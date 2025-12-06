@@ -9,9 +9,9 @@ type Props = {
 };
 
 const severityTone: Record<Props['severity'], string> = {
-  info: 'bg-medical/10 text-medical',
-  warning: 'bg-risk-yellow/15 text-risk-yellow',
-  critical: 'bg-risk-red/15 text-risk-red'
+  info: 'bg-skyglass text-medicalDark border border-medical/20',
+  warning: 'bg-risk-yellow/15 text-risk-yellow border border-risk-yellow/30',
+  critical: 'bg-risk-red/15 text-risk-red border border-risk-red/30'
 };
 
 export default function AlertCard({
@@ -37,7 +37,7 @@ export default function AlertCard({
       </div>
       <button
         type="button"
-        className="w-full rounded-full bg-teal text-white py-2 text-sm font-semibold"
+        className="w-full rounded-full bg-medical text-white py-2 text-sm font-semibold"
         onClick={onAcknowledge}
         disabled={acknowledged}
       >

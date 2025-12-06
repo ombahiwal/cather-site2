@@ -23,15 +23,15 @@ export default function BottomNav() {
   const hasCritical = Boolean((data?.alerts || []).find((alert: any) => !alert.acknowledged && alert.severity === 'critical'));
 
   return (
-    <nav className="fixed bottom-0 inset-x-0 bg-white/95 border-t border-slate-200 backdrop-blur px-4 py-2">
-      <div className="max-w-md mx-auto flex items-center justify-between text-xs text-slate-500">
+    <nav className="fixed bottom-0 inset-x-0 bg-gradient-to-r from-medical to-medicalDark text-white border-t border-white/20 backdrop-blur px-4 py-2">
+      <div className="max-w-md mx-auto flex items-center justify-between text-xs">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           return (
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-col items-center gap-1 px-2 py-1 rounded-full ${isActive ? 'text-teal font-semibold' : ''}`}
+              className={`flex flex-col items-center gap-1 px-2 py-1 rounded-full ${isActive ? 'text-sky-100 font-semibold bg-white/10' : 'text-white/80'}`}
             >
               <span className="text-lg" aria-hidden>
                 {item.icon}
