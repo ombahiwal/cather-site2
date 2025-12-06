@@ -7,9 +7,25 @@ import WorkflowGuard from '@/components/WorkflowGuard';
 import { useWorkflow } from '@/context/WorkflowContext';
 import { fetcher } from '@/lib/fetcher';
 
+type WardMetric = {
+  id: string;
+  wardId: string;
+  date: string;
+  clabsiCases: number;
+  totalCentralLineDays: number;
+  dressingChangeCount: number;
+  catheterChangeCount: number;
+  derivedRate: number;
+};
+
+type WardResponse = {
+  metrics: WardMetric[];
+  delta: number;
+};
+
 export default function WardAnalyticsPage() {
   const { stage, advanceTo } = useWorkflow();
-  const { data } = useSWR('/api/ward-metrics', fetcher, { refreshInterval: 60000 });
+  const { data } = useSWR<WardResponse>('/api/ward-metrics', fetcher, { refreshInterval: 60000 });
 
   useEffect(() => {
     if (stage === 'ward') {
@@ -62,7 +78,7 @@ export default function WardAnalyticsPage() {
                   stroke="#0f766e"
                   strokeWidth={3}
                   points={trend
-                    .map((point: any, index: number) => {
+                    .map((point: WardMetric, index: number) => {
                       const x = (index / Math.max(trend.length - 1, 1)) * 320;
                       const y = 140 - (point.derivedRate / 10) * 140;
                       return `${x},${Math.max(Math.min(y, 140), 0)}`;

@@ -8,11 +8,33 @@ import AlertCard from '@/components/AlertCard';
 import { useWorkflow } from '@/context/WorkflowContext';
 import { fetcher } from '@/lib/fetcher';
 
+type AlertSeverity = 'info' | 'warning' | 'critical';
+type AlertType = 'traction' | 'dressing_failure' | 'high_clabsi' | 'high_venous_resistance' | 'resource_shortage';
+
+type AlertPayload = {
+  id: string;
+  patientId?: string | null;
+  type: AlertType;
+  reason: string;
+  severity: AlertSeverity;
+  recommendedAction: string;
+  acknowledged: boolean;
+  createdAt: string;
+};
+
+type AlertsResponse = {
+  alerts: AlertPayload[];
+};
+
 export default function AlertsPage() {
   const { patientId, stage, advanceTo } = useWorkflow();
-  const { data, mutate } = useSWR(patientId ? `/api/alerts?patientId=${patientId}` : '/api/alerts', fetcher, {
-    refreshInterval: 15000
-  });
+  const { data, mutate } = useSWR<AlertsResponse>(
+    patientId ? `/api/alerts?patientId=${patientId}` : '/api/alerts',
+    fetcher,
+    {
+      refreshInterval: 15000
+    }
+  );
 
   useEffect(() => {
     if (stage === 'alerts') {
@@ -30,7 +52,7 @@ export default function AlertsPage() {
       <PageShell title="Clinical Alerts" subtitle="High-signal events first">
         {!data ? <p className="text-sm text-slate-500">Loading alerts...</p> : null}
         {data?.alerts?.length ? (
-          data.alerts.map((alert: any) => (
+          data.alerts.map((alert) => (
             <AlertCard
               key={alert.id}
               title={alert.type.replace('_', ' ')}

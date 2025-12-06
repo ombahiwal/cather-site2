@@ -11,9 +11,44 @@ import TrendChart from '@/components/TrendChart';
 import { useWorkflow } from '@/context/WorkflowContext';
 import { fetcher } from '@/lib/fetcher';
 
+type RiskBand = 'green' | 'yellow' | 'red';
+
+type DashboardResponse = {
+  patient: {
+    id: string;
+    bedNumber: string;
+    initials: string;
+    insertionDate: string;
+    daysSinceInsertion: number;
+  };
+  riskSnapshot?: {
+    clisaScore: number;
+    predictiveClabsiScore: number;
+    predictiveClabsiBand: RiskBand;
+    predictiveVenousResistanceBand: RiskBand;
+    recommendedAction: string;
+    tractionPullsYellow: number;
+    tractionPullsRed: number;
+  } | null;
+  latestCapture?: {
+    imageUrl: string;
+  } | null;
+  trend?: Array<{
+    timestamp: string;
+    score: number;
+    band: RiskBand;
+    dressingChange: boolean;
+    catheterChange: boolean;
+    flushing: boolean;
+  }>;
+};
+
 export default function DashboardPage() {
   const { patientId, stage, advanceTo } = useWorkflow();
-  const { data, error } = useSWR(patientId ? `/api/dashboard?patientId=${patientId}` : null, fetcher);
+  const { data, error } = useSWR<DashboardResponse>(
+    patientId ? `/api/dashboard?patientId=${patientId}` : null,
+    fetcher
+  );
   const [showClisa, setShowClisa] = useState(false);
   const [showImage, setShowImage] = useState(false);
 

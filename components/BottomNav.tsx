@@ -1,15 +1,16 @@
 "use client";
 
 import Link from 'next/link';
+import type { Route } from 'next';
 import { usePathname } from 'next/navigation';
 import useSWR from 'swr';
 
-const navItems = [
-  { href: '/patient', label: 'Patient', icon: '🩺' },
-  { href: '/capture', label: 'Capture', icon: '📷' },
-  { href: '/dashboard', label: 'Dashboard', icon: '📊' },
-  { href: '/alerts', label: 'Alerts', icon: '⚠️' },
-  { href: '/ward-analytics', label: 'Ward', icon: '🏥' }
+const navItems: Array<{ href: Route; label: string; icon: string }> = [
+  { href: '/patient' as Route, label: 'Patient', icon: '🩺' },
+  { href: '/capture' as Route, label: 'Capture', icon: '📷' },
+  { href: '/dashboard' as Route, label: 'Dashboard', icon: '📊' },
+  { href: '/alerts' as Route, label: 'Alerts', icon: '⚠️' },
+  { href: '/ward-analytics' as Route, label: 'Ward', icon: '🏥' }
 ];
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());

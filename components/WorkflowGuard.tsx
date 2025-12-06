@@ -1,16 +1,21 @@
 "use client";
 
 import { useEffect, useState } from 'react';
+import type { Route } from 'next';
 import { useRouter } from 'next/navigation';
 import { canAccessStage, useWorkflow, type WorkflowStage } from '@/context/WorkflowContext';
 
 type Props = {
   requiredStage: WorkflowStage;
   children: React.ReactNode;
-  fallbackPath?: string;
+  fallbackPath?: Route;
 };
 
-export default function WorkflowGuard({ requiredStage, children, fallbackPath = '/patient' }: Props) {
+export default function WorkflowGuard({
+  requiredStage,
+  children,
+  fallbackPath = '/patient' as Route,
+}: Props) {
   const router = useRouter();
   const { stage } = useWorkflow();
   const [allowed, setAllowed] = useState(false);
