@@ -1,6 +1,7 @@
 type Props = {
   band: 'green' | 'yellow' | 'red';
   action: string;
+  title?: string;
 };
 
 const bgMap = {
@@ -9,10 +10,16 @@ const bgMap = {
   red: 'bg-risk-red/10 text-risk-red'
 };
 
-export default function RecommendedActionCard({ band, action }: Props) {
+const frameMap = {
+  green: 'border border-risk-green/30',
+  yellow: 'border border-risk-yellow/30',
+  red: 'border border-risk-red/30'
+};
+
+export default function RecommendedActionCard({ band, action, title = 'Recommended action' }: Props) {
   return (
-    <div className={`card ${bgMap[band]} border border-transparent`}>
-      <p className="text-xs uppercase tracking-wide">Recommended Action</p>
+    <div className={`card ${bgMap[band]} ${frameMap[band]}`}>
+      <p className="text-xs uppercase tracking-wide">{title}</p>
       <p className="text-base font-semibold">{action}</p>
     </div>
   );

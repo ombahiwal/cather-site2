@@ -7,11 +7,13 @@
 }
 
 body {
-  @apply font-sans bg-slate-50 text-slate-900;
+  @apply font-sans text-slate-900;
+  background: linear-gradient(180deg, #dbeafe 0%, #eff6ff 40%, #ffffff 100%);
+  min-height: 100vh;
 }
 
 .card {
-  @apply rounded-2xl bg-white shadow-sm p-4 space-y-3;
+  @apply rounded-2xl bg-white/95 shadow-sm p-4 space-y-3 backdrop-blur;
 }
 
 button:disabled {

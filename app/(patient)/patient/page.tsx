@@ -26,10 +26,10 @@ const defaultPatientForm: PatientForm = {
     immuneNutrition: false
   },
   safetyChecklist: {
-    capsClosed: true,
-    glovesWorn: true,
-    noAbnormalities: true,
-    dressingIntact: true
+    capsClosed: false,
+    glovesWorn: false,
+    noAbnormalities: false,
+    dressingIntact: false
   }
 };
 
@@ -140,6 +140,7 @@ export default function PatientPage() {
 
         <section className="card">
           <p className="text-sm font-semibold">Nursing safety checklist</p>
+          <p className="text-xs text-slate-500">Each item starts unchecked so the nurse can actively attest current shift conditions.</p>
           {Object.entries(form.safetyChecklist).map(([key, value]) => (
             <label key={key} className="flex items-center justify-between text-sm text-slate-700">
               <span>{labelCopy[key]}</span>

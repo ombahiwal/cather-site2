@@ -11,6 +11,13 @@ const sources: Record<'English' | 'Vernacular', string> = {
   Vernacular: '/audio/consent-vernacular.wav'
 };
 
+const transcripts: Record<'English' | 'Vernacular', string> = {
+  English:
+    'You are authorizing the CathShield nursing team to capture and analyze catheter images for infection prevention. The capture does not expose your identity and can be stopped at any time if you withdraw consent.',
+  Vernacular:
+    'आप कैथशील्ड नर्सिंग टीम को कैथेटर स्थल की फोटो लेने और संक्रमण रोकथाम के लिये उसका विश्लेषण करने की अनुमति दे रहे हैं। यह रिकॉर्ड आपकी पहचान साझा नहीं करता और आप किसी भी समय सहमति वापस ले सकते हैं।'
+};
+
 export default function ConsentPage() {
   const router = useRouter();
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -68,6 +75,10 @@ export default function ConsentPage() {
           <p className="text-sm text-slate-600">
             Status: {status === 'idle' ? 'Ready' : status === 'playing' ? 'Playing...' : 'Completed'}
           </p>
+          <div className="rounded-2xl bg-slate-50 px-3 py-2 text-sm text-slate-700" aria-live="polite">
+            <p className="font-semibold text-slate-900">Consent transcript ({language})</p>
+            <p>{transcripts[language]}</p>
+          </div>
           <label className="flex items-center gap-2 text-sm text-slate-700">
             <input
               type="checkbox"

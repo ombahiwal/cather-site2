@@ -36,11 +36,18 @@ export default function WardAnalyticsPage() {
   const metrics = data?.metrics?.[0];
   const trend = data?.metrics ?? [];
   const delta = data?.delta ?? 0;
+  const isLoading = !data;
+  const noMetricsAvailable = Boolean(data && !metrics);
 
   return (
     <WorkflowGuard requiredStage="ward">
       <PageShell title="Ward Analytics" subtitle="CLABSI per 1000 line days">
-        {!metrics ? <p className="text-sm text-slate-500">Loading ward metrics...</p> : null}
+        {isLoading ? <p className="text-sm text-slate-500">Loading ward metrics...</p> : null}
+        {noMetricsAvailable ? (
+          <p className="text-sm text-amber-600">
+            No ward metrics found. Run the Prisma seed or ingest telemetry to view CLABSI performance.
+          </p>
+        ) : null}
         {metrics ? (
           <>
             <section className="card">

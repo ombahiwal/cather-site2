@@ -19,15 +19,10 @@ export default function CapturePage() {
   const { patientId, advanceTo } = useWorkflow();
   const [catheterFile, setCatheterFile] = useState<File | null>(null);
   const [tractionFile, setTractionFile] = useState<File | null>(null);
-  const [tractionCounts, setTractionCounts] = useState({ yellow: 0, red: 0 });
+  const [tractionPulls, setTractionPulls] = useState(0);
   const [events, setEvents] = useState({ dressingChanged: false, catheterChanged: false, flushingDone: false });
   const [pending, setPending] = useState(false);
   const [status, setStatus] = useState('');
-
-  const handleNumberChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = event.target;
-    setTractionCounts((prev) => ({ ...prev, [name]: Number(value) }));
-  };
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
@@ -47,7 +42,7 @@ export default function CapturePage() {
           patientId,
           catheterImageUrl,
           tractionImageUrl,
-          tractionCounts,
+          tractionCounts: { yellow: tractionPulls, red: 0 },
           events
         })
       });
@@ -88,30 +83,18 @@ export default function CapturePage() {
               className="w-full text-sm"
             />
             {!tractionFile ? (
-              <div className="grid grid-cols-2 gap-3">
-                <label className="flex flex-col text-sm text-slate-600">
-                  Yellow pulls (12h)
-                  <input
-                    type="number"
-                    name="yellow"
-                    min={0}
-                    value={tractionCounts.yellow}
-                    onChange={handleNumberChange}
-                    className="rounded-xl border border-slate-200 px-3 py-2"
-                  />
-                </label>
-                <label className="flex flex-col text-sm text-slate-600">
-                  Red pulls (12h)
-                  <input
-                    type="number"
-                    name="red"
-                    min={0}
-                    value={tractionCounts.red}
-                    onChange={handleNumberChange}
-                    className="rounded-xl border border-slate-200 px-3 py-2"
-                  />
-                </label>
-              </div>
+              <label className="flex flex-col text-sm text-slate-600">
+                Pulls (12h)
+                <input
+                  type="number"
+                  min={0}
+                  value={tractionPulls}
+                  onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                    setTractionPulls(Number(event.target.value) || 0)
+                  }
+                  className="rounded-xl border border-slate-200 px-3 py-2"
+                />
+              </label>
             ) : null}
           </section>
 

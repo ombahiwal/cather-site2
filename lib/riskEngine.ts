@@ -119,7 +119,7 @@ export const calculateRiskSnapshot = (input: RiskInput) => {
   const recommendedAction = (() => {
     if (predictiveClabsiScore <= 3) return 'Routine flush Q24h';
     if (predictiveClabsiScore <= 6) return 'Flush Q12h + inform MO';
-    if (predictiveClabsiScore <= 9) return 'Flush Q8h + urgent ultrasound';
+    if (predictiveClabsiScore <= 9) return 'Venous trauma protocol + urgent ultrasound';
     return 'Stop infusions + emergency MO review / sepsis protocol';
   })();
 
