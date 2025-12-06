@@ -10,8 +10,8 @@ type Props = {
 
 const severityTone: Record<Props['severity'], string> = {
   info: 'bg-skyglass text-medicalDark border border-medical/20',
-  warning: 'bg-risk-yellow/15 text-risk-yellow border border-risk-yellow/30',
-  critical: 'bg-risk-red/15 text-risk-red border border-risk-red/30'
+  warning: 'bg-risk-yellow/10 text-risk-yellow border border-risk-yellow/20',
+  critical: 'bg-risk-red/10 text-risk-red border border-risk-red/20'
 };
 
 export default function AlertCard({
@@ -31,13 +31,13 @@ export default function AlertCard({
       </div>
       <p className="text-sm text-slate-700">{reason}</p>
       <p className="text-xs text-slate-500">{new Date(timestamp).toLocaleString()}</p>
-      <div className="bg-slate-100 rounded-xl px-3 py-2">
+      <div className="bg-slate-50 rounded-2xl px-3 py-2 border border-slate-100">
         <p className="text-xs uppercase tracking-wide text-slate-500">Recommended action</p>
         <p className="text-sm font-semibold">{recommendedAction}</p>
       </div>
       <button
         type="button"
-        className="w-full rounded-full bg-medical text-white py-2 text-sm font-semibold"
+        className="w-full rounded-full bg-medical text-white py-2 text-sm font-semibold hover:bg-medicalDark transition"
         onClick={onAcknowledge}
         disabled={acknowledged}
       >

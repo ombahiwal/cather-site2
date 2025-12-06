@@ -3,6 +3,7 @@ import { db } from '@/lib/db';
 import { buildRiskAlerts } from '@/lib/alerts';
 import { calculateRiskSnapshot, type PatientFactorFlags, type SafetyChecklist } from '@/lib/riskEngine';
 import { analyzeCatheterImage } from '@/lib/gemini';
+import { coerceTelemetryBoolean, coerceTelemetryCount, getShiftWindow } from '@/lib/shiftWindow';
 
 export async function POST(request: Request) {
   const body = await request.json();
@@ -32,21 +33,52 @@ export async function POST(request: Request) {
     });
   }
 
-  const periodEnd = new Date();
-  const periodStart = new Date(periodEnd.getTime() - 12 * 60 * 60 * 1000);
+  const { periodStart, periodEnd } = getShiftWindow(new Date());
+  const incomingCounts = {
+    yellow: coerceTelemetryCount(body.tractionCounts?.yellow),
+    red: coerceTelemetryCount(body.tractionCounts?.red)
+  };
+  const incomingEvents = {
+    dressingChanged: coerceTelemetryBoolean(body.events?.dressingChanged),
+    catheterChanged: coerceTelemetryBoolean(body.events?.catheterChanged),
+    flushingDone: coerceTelemetryBoolean(body.events?.flushingDone)
+  };
+  const incomingAdaptive = coerceTelemetryBoolean(body.adaptiveTractionAlert);
 
-  const shiftEvents = await db.shiftEvents.create({
-    data: {
+  const recentShiftEvents = await db.shiftEvents.findFirst({
+    where: {
       patientId: patient.id,
-      periodStart,
-      periodEnd,
-      tractionPullsYellow: body.tractionCounts?.yellow ?? 0,
-      tractionPullsRed: body.tractionCounts?.red ?? 0,
-      dressingChanged: Boolean(body.events?.dressingChanged),
-      catheterChanged: Boolean(body.events?.catheterChanged),
-      flushingDone: Boolean(body.events?.flushingDone)
-    }
+      periodEnd: { gte: periodStart }
+    },
+    orderBy: { periodEnd: 'desc' }
   });
+
+  const shiftEvents = recentShiftEvents
+    ? await db.shiftEvents.update({
+        where: { id: recentShiftEvents.id },
+        data: {
+          periodEnd,
+          tractionPullsYellow: incomingCounts.yellow ?? recentShiftEvents.tractionPullsYellow,
+          tractionPullsRed: incomingCounts.red ?? recentShiftEvents.tractionPullsRed,
+          dressingChanged: incomingEvents.dressingChanged ?? recentShiftEvents.dressingChanged,
+          catheterChanged: incomingEvents.catheterChanged ?? recentShiftEvents.catheterChanged,
+          flushingDone: incomingEvents.flushingDone ?? recentShiftEvents.flushingDone,
+          adaptiveTractionAlert: incomingAdaptive ?? recentShiftEvents.adaptiveTractionAlert
+        }
+      })
+    : await db.shiftEvents.create({
+        data: {
+          patientId: patient.id,
+          periodStart,
+          periodEnd,
+          tractionPullsYellow: incomingCounts.yellow ?? 0,
+          tractionPullsRed: incomingCounts.red ?? 0,
+          dressingChanged: incomingEvents.dressingChanged ?? false,
+          catheterChanged: incomingEvents.catheterChanged ?? false,
+          flushingDone: incomingEvents.flushingDone ?? false,
+          adaptiveTractionAlert: incomingAdaptive ?? false
+        }
+      });
 
   const patientFactors = patient.patientFactors as unknown as PatientFactorFlags;
   const safetyChecklist = patient.safetyChecklist as unknown as SafetyChecklist;
@@ -78,6 +110,7 @@ export async function POST(request: Request) {
       recommendedAction: computation.recommendedAction,
       tractionPullsYellow: computation.tractionPullsYellow,
       tractionPullsRed: computation.tractionPullsRed,
+        shiftEventsId: shiftEvents.id,
       riskPhase: computation.riskPhase,
       earlyClabsiScore: computation.earlyClabsiScore,
       lateClabsiScore: computation.lateClabsiScore,

@@ -23,6 +23,7 @@ export async function GET(request: Request) {
   const latestCapture = patient.imageCaptures[0] ?? null;
   const trend = await db.riskSnapshot.findMany({
     where: { patientId },
+    include: { shiftEvents: true },
     orderBy: { capturedAt: 'asc' },
     take: 10
   });
@@ -41,9 +42,12 @@ export async function GET(request: Request) {
       timestamp: entry.capturedAt.toISOString(),
       score: entry.predictiveClabsiScore,
       band: entry.predictiveClabsiBand,
-      dressingChange: false,
-      catheterChange: false,
-      flushing: false
+      dressingChange: entry.shiftEvents?.dressingChanged ?? false,
+      catheterChange: entry.shiftEvents?.catheterChanged ?? false,
+      flushing: entry.shiftEvents?.flushingDone ?? false,
+      tractionPullsYellow: entry.shiftEvents?.tractionPullsYellow ?? entry.tractionPullsYellow ?? 0,
+      tractionPullsRed: entry.shiftEvents?.tractionPullsRed ?? entry.tractionPullsRed ?? 0,
+      adaptiveTractionAlert: entry.shiftEvents?.adaptiveTractionAlert ?? false
     }))
   });
 }

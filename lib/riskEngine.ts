@@ -1,6 +1,7 @@
 import { differenceInDays } from 'date-fns';
 import type { RiskBand, RiskPhase } from '@prisma/client';
 import { clamp } from './utils';
+import { getRiskThresholds, type RiskThresholds } from './riskConfig';
 
 export type PatientFactorFlags = {
   agitation: boolean;
@@ -42,15 +43,9 @@ type RiskInput = {
   riskPhaseOverride?: RiskPhase;
 };
 
-const actionMatrix: Record<RiskBand, string> = {
-  green: 'Routine flush every 24h and document site',
-  yellow: 'Flush every 12h, reinforce dressing, inform medical officer',
-  red: 'Stop infusions, urgent ultrasound, initiate sepsis protocol'
-};
-
-export const bandFromScore = (score: number): RiskBand => {
-  if (score <= 3) return 'green';
-  if (score <= 6) return 'yellow';
+const resolveBand = (score: number, thresholds: RiskThresholds = getRiskThresholds()): RiskBand => {
+  if (score <= thresholds.greenMax) return 'green';
+  if (score <= thresholds.yellowMax) return 'yellow';
   return 'red';
 };
 
@@ -87,9 +82,12 @@ const scorePatientFactors = (flags: PatientFactorFlags) => {
   return 3;
 };
 
-const dwellAdjustment = (insertionDate: Date) => {
+const dwellProfile = (insertionDate: Date) => {
   const days = differenceInDays(new Date(), insertionDate);
-  return days > 9 ? 1 : 0;
+  return {
+    dwellScore: days > 9 ? 1 : 0,
+    daysSinceInsertion: days
+  };
 };
 
 const determinePhase = (insertionDate: Date, override?: RiskPhase): RiskPhase => {
@@ -117,18 +115,21 @@ export const calculateRiskSnapshot = (input: RiskInput) => {
     catheterChanged: input.catheterChanged
   });
   const patientScore = scorePatientFactors(input.patientFactors);
-  const dwellScore = dwellAdjustment(input.insertionDate);
+  const { dwellScore, daysSinceInsertion } = dwellProfile(input.insertionDate);
+  const riskPhase = determinePhase(input.insertionDate, input.riskPhaseOverride);
 
   const imagingBonus = input.nightModeAssist ? -1 : 0;
   const adaptiveTractionBonus = input.adaptiveTractionAlert ? 1 : 0;
-  const trendPenalty = clamp(input.trendDeterioration ?? 0, 0, 3);
+  const longDwellPenalty = daysSinceInsertion >= 7 ? 1 : 0;
+  const trendPenalty = clamp((input.trendDeterioration ?? 0) + longDwellPenalty, 0, 4);
 
   const adjustedTractionScore = clamp(tractionScore + adaptiveTractionBonus, 0, 4);
   const earlyClabsiScore = Math.round(clamp(clisaScore + patientScore + dwellScore + imagingBonus));
-  const lateClabsiScore = Math.round(clamp(earlyClabsiScore + adjustedTractionScore + trendPenalty));
-  const riskPhase = determinePhase(input.insertionDate, input.riskPhaseOverride);
+  const latePhaseBoost = riskPhase === 'late' && daysSinceInsertion >= 7 ? 1 : 0;
+  const lateClabsiScore = Math.round(clamp(earlyClabsiScore + adjustedTractionScore + trendPenalty + latePhaseBoost));
   const predictiveClabsiScore = riskPhase === 'early' ? earlyClabsiScore : lateClabsiScore;
-  const predictiveClabsiBand = bandFromScore(predictiveClabsiScore);
+  const thresholds = getRiskThresholds();
+  const predictiveClabsiBand = resolveBand(predictiveClabsiScore, thresholds);
   let predictiveVenousResistanceBand = venousBandFromTraction(
     input.tractionPullsYellow,
     input.tractionPullsRed
@@ -138,9 +139,9 @@ export const calculateRiskSnapshot = (input: RiskInput) => {
   }
 
   const recommendedAction = (() => {
-    if (predictiveClabsiScore <= 3) return 'Routine flush Q24h';
-    if (predictiveClabsiScore <= 6) return 'Flush Q12h + inform MO';
-    if (predictiveClabsiScore <= 9) return 'Venous trauma protocol + urgent ultrasound';
+    if (predictiveClabsiScore <= thresholds.greenMax) return 'Routine flush Q24h';
+    if (predictiveClabsiScore <= thresholds.yellowMax) return 'Flush Q12h + inform MO';
+    if (predictiveClabsiScore <= thresholds.yellowMax + 2) return 'Venous trauma protocol + urgent ultrasound';
     return 'Stop infusions + emergency MO review / sepsis protocol';
   })();
 

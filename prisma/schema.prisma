@@ -93,8 +93,10 @@ model ShiftEvents {
   dressingChanged     Boolean  @default(false)
   catheterChanged     Boolean  @default(false)
   flushingDone        Boolean  @default(false)
+  adaptiveTractionAlert Boolean @default(false)
 
   patient            Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  riskSnapshots      RiskSnapshot[]
 }
 
 model RiskSnapshot {
@@ -113,8 +115,10 @@ model RiskSnapshot {
   lateClabsiScore                Int       @default(0)
   trendPenalty                   Int       @default(0)
   adaptiveTractionAlert          Boolean   @default(false)
+  shiftEventsId                  String?
 
-  patient                        Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  patient                        Patient      @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  shiftEvents                    ShiftEvents? @relation(fields: [shiftEventsId], references: [id], onDelete: SetNull)
 }
 
 model Alert {
