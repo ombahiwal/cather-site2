@@ -61,7 +61,7 @@ export async function POST(request: Request) {
     tractionPullsRed: shiftEvents.tractionPullsRed,
     dressingChanged: shiftEvents.dressingChanged,
     catheterChanged: shiftEvents.catheterChanged,
-    flushingDone: shiftEvents.flushingDone
+    flushingDone: shiftEvents.flushingDone,
     signals: aiSignals ?? undefined
   });
 
