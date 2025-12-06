@@ -62,7 +62,10 @@ export async function POST(request: Request) {
     dressingChanged: shiftEvents.dressingChanged,
     catheterChanged: shiftEvents.catheterChanged,
     flushingDone: shiftEvents.flushingDone,
-    signals: aiSignals ?? undefined
+    signals: aiSignals ?? undefined,
+    adaptiveTractionAlert: Boolean(body.adaptiveTractionAlert),
+    trendDeterioration: body.trendDeterioration ?? 0,
+    nightModeAssist: Boolean(body.nightModeAssist)
   });
 
   const riskSnapshot = await db.riskSnapshot.create({
@@ -74,7 +77,12 @@ export async function POST(request: Request) {
       predictiveVenousResistanceBand: computation.predictiveVenousResistanceBand,
       recommendedAction: computation.recommendedAction,
       tractionPullsYellow: computation.tractionPullsYellow,
-      tractionPullsRed: computation.tractionPullsRed
+      tractionPullsRed: computation.tractionPullsRed,
+      riskPhase: computation.riskPhase,
+      earlyClabsiScore: computation.earlyClabsiScore,
+      lateClabsiScore: computation.lateClabsiScore,
+      trendPenalty: computation.trendPenalty,
+      adaptiveTractionAlert: computation.adaptiveTractionAlert
     }
   });
 

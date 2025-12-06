@@ -37,6 +37,11 @@ enum RiskBand {
   red
 }
 
+enum RiskPhase {
+  early
+  late
+}
+
 model Patient {
   id               String        @id @default(cuid())
   bedNumber        String
@@ -103,6 +108,11 @@ model RiskSnapshot {
   recommendedAction              String
   tractionPullsYellow            Int
   tractionPullsRed               Int
+  riskPhase                      RiskPhase @default(late)
+  earlyClabsiScore               Int       @default(0)
+  lateClabsiScore                Int       @default(0)
+  trendPenalty                   Int       @default(0)
+  adaptiveTractionAlert          Boolean   @default(false)
 
   patient                        Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
 }

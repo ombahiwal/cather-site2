@@ -30,6 +30,11 @@ type DashboardResponse = {
     recommendedAction: string;
     tractionPullsYellow: number;
     tractionPullsRed: number;
+    riskPhase: 'early' | 'late';
+    earlyClabsiScore: number;
+    lateClabsiScore: number;
+    trendPenalty: number;
+    adaptiveTractionAlert: boolean;
   } | null;
   latestCapture?: {
     imageUrl: string;
@@ -54,6 +59,11 @@ const legendClasses: Record<RiskBand, string> = {
   green: 'bg-risk-green/15 text-risk-green border border-risk-green/30',
   yellow: 'bg-risk-yellow/15 text-risk-yellow border border-risk-yellow/30',
   red: 'bg-risk-red/15 text-risk-red border border-risk-red/30'
+};
+
+const phaseDescriptions: Record<'early' | 'late', string> = {
+  early: 'Early phase (≤ 3 days): dressing + patient factors prioritized',
+  late: 'Late phase (> 3 days): traction + trend penalties layered in'
 };
 
 const colorLegend: Array<{ level: RiskBand; copy: string }> = [
@@ -138,6 +148,7 @@ export default function DashboardPage() {
             {data.riskSnapshot ? (
               <section className="card space-y-3">
                 <p className="text-sm font-semibold text-slate-800">Predictive risk summary</p>
+                <p className="text-xs text-slate-500">{phaseDescriptions[data.riskSnapshot.riskPhase]}</p>
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs uppercase tracking-wide text-slate-500">Predictive CLABSI risk</p>
@@ -155,6 +166,26 @@ export default function DashboardPage() {
                     </span>
                   ))}
                 </div>
+                <div className="grid grid-cols-2 gap-3 text-xs text-slate-600">
+                  <div>
+                    <p className="uppercase tracking-wide text-[10px] text-slate-400">Early CLABSI score</p>
+                    <p className="text-sm font-semibold text-slate-900">{data.riskSnapshot.earlyClabsiScore}</p>
+                  </div>
+                  <div>
+                    <p className="uppercase tracking-wide text-[10px] text-slate-400">Late CLABSI score</p>
+                    <p className="text-sm font-semibold text-slate-900">{data.riskSnapshot.lateClabsiScore}</p>
+                  </div>
+                  <div>
+                    <p className="uppercase tracking-wide text-[10px] text-slate-400">Trend penalty</p>
+                    <p className="text-sm font-semibold text-slate-900">{data.riskSnapshot.trendPenalty}</p>
+                  </div>
+                  <div>
+                    <p className="uppercase tracking-wide text-[10px] text-slate-400">Adaptive traction</p>
+                    <p className={`text-sm font-semibold ${data.riskSnapshot.adaptiveTractionAlert ? 'text-risk-red' : 'text-slate-700'}`}>
+                      {data.riskSnapshot.adaptiveTractionAlert ? 'Triggered' : 'Not triggered'}
+                    </p>
+                  </div>
+                </div>
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs uppercase tracking-wide text-slate-500">Predictive venous trauma</p>
@@ -165,6 +196,11 @@ export default function DashboardPage() {
                     label={`VENOUS ${data.riskSnapshot.predictiveVenousResistanceBand.toUpperCase()}`}
                   />
                 </div>
+                {data.riskSnapshot.adaptiveTractionAlert ? (
+                  <p className="text-xs text-risk-red font-semibold">
+                    Adaptive hardware detected patient-driven traction risk. Follow venous trauma protocol immediately.
+                  </p>
+                ) : null}
               </section>
             ) : null}
 

@@ -52,7 +52,12 @@ async function main() {
         predictiveVenousResistanceBand: computation.predictiveVenousResistanceBand,
         recommendedAction: computation.recommendedAction,
         tractionPullsYellow: computation.tractionPullsYellow,
-        tractionPullsRed: computation.tractionPullsRed
+        tractionPullsRed: computation.tractionPullsRed,
+        riskPhase: computation.riskPhase,
+        earlyClabsiScore: computation.earlyClabsiScore,
+        lateClabsiScore: computation.lateClabsiScore,
+        trendPenalty: computation.trendPenalty,
+        adaptiveTractionAlert: computation.adaptiveTractionAlert
       }
     });
   }

@@ -1,5 +1,5 @@
 import { differenceInDays } from 'date-fns';
-import type { RiskBand } from '@prisma/client';
+import type { RiskBand, RiskPhase } from '@prisma/client';
 import { clamp } from './utils';
 
 export type PatientFactorFlags = {
@@ -36,6 +36,10 @@ type RiskInput = {
   catheterChanged: boolean;
   flushingDone: boolean;
   signals?: Partial<ImageSignals>;
+  adaptiveTractionAlert?: boolean;
+  trendDeterioration?: number;
+  nightModeAssist?: boolean;
+  riskPhaseOverride?: RiskPhase;
 };
 
 const actionMatrix: Record<RiskBand, string> = {
@@ -88,6 +92,12 @@ const dwellAdjustment = (insertionDate: Date) => {
   return days > 9 ? 1 : 0;
 };
 
+const determinePhase = (insertionDate: Date, override?: RiskPhase): RiskPhase => {
+  if (override) return override;
+  const days = differenceInDays(new Date(), insertionDate);
+  return days <= 3 ? 'early' : 'late';
+};
+
 // TODO: replace this deterministic fallback with CV inference outputs from the catheter-site model.
 const defaultSignals: ImageSignals = {
   erythema: 1,
@@ -109,12 +119,23 @@ export const calculateRiskSnapshot = (input: RiskInput) => {
   const patientScore = scorePatientFactors(input.patientFactors);
   const dwellScore = dwellAdjustment(input.insertionDate);
 
-  const predictiveClabsiScore = clamp(clisaScore + tractionScore + patientScore + dwellScore);
+  const imagingBonus = input.nightModeAssist ? -1 : 0;
+  const adaptiveTractionBonus = input.adaptiveTractionAlert ? 1 : 0;
+  const trendPenalty = clamp(input.trendDeterioration ?? 0, 0, 3);
+
+  const adjustedTractionScore = clamp(tractionScore + adaptiveTractionBonus, 0, 4);
+  const earlyClabsiScore = Math.round(clamp(clisaScore + patientScore + dwellScore + imagingBonus));
+  const lateClabsiScore = Math.round(clamp(earlyClabsiScore + adjustedTractionScore + trendPenalty));
+  const riskPhase = determinePhase(input.insertionDate, input.riskPhaseOverride);
+  const predictiveClabsiScore = riskPhase === 'early' ? earlyClabsiScore : lateClabsiScore;
   const predictiveClabsiBand = bandFromScore(predictiveClabsiScore);
-  const predictiveVenousResistanceBand = venousBandFromTraction(
+  let predictiveVenousResistanceBand = venousBandFromTraction(
     input.tractionPullsYellow,
     input.tractionPullsRed
   );
+  if (input.adaptiveTractionAlert && predictiveVenousResistanceBand !== 'red') {
+    predictiveVenousResistanceBand = predictiveVenousResistanceBand === 'green' ? 'yellow' : 'red';
+  }
 
   const recommendedAction = (() => {
     if (predictiveClabsiScore <= 3) return 'Routine flush Q24h';
@@ -130,7 +151,12 @@ export const calculateRiskSnapshot = (input: RiskInput) => {
     predictiveVenousResistanceBand,
     recommendedAction,
     tractionPullsYellow: input.tractionPullsYellow,
-    tractionPullsRed: input.tractionPullsRed
+    tractionPullsRed: input.tractionPullsRed,
+    riskPhase,
+    earlyClabsiScore,
+    lateClabsiScore,
+    trendPenalty: Math.round(trendPenalty),
+    adaptiveTractionAlert: Boolean(input.adaptiveTractionAlert)
   };
 };
 

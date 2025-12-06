@@ -21,6 +21,8 @@ export default function CapturePage() {
   const [tractionFile, setTractionFile] = useState<File | null>(null);
   const [tractionPulls, setTractionPulls] = useState(0);
   const [events, setEvents] = useState({ dressingChanged: false, catheterChanged: false, flushingDone: false });
+  const [nightModeAssist, setNightModeAssist] = useState(false);
+  const [adaptiveTractionAlert, setAdaptiveTractionAlert] = useState(false);
   const [pending, setPending] = useState(false);
   const [status, setStatus] = useState('');
 
@@ -32,9 +34,29 @@ export default function CapturePage() {
     }
     setPending(true);
     setStatus('');
+    let catheterImageUrl: string;
     try {
-      const catheterImageUrl = await readFile(catheterFile);
-      const tractionImageUrl = tractionFile ? await readFile(tractionFile) : null;
+      catheterImageUrl = await readFile(catheterFile);
+    } catch (error) {
+      console.error(error);
+      setStatus('Image capture failed — retry');
+      setPending(false);
+      return;
+    }
+
+    let tractionImageUrl: string | null = null;
+    if (tractionFile) {
+      try {
+        tractionImageUrl = await readFile(tractionFile);
+      } catch (error) {
+        console.error(error);
+        setStatus('Image capture failed — retry');
+        setPending(false);
+        return;
+      }
+    }
+
+    try {
       const response = await fetch('/api/captures', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -43,15 +65,19 @@ export default function CapturePage() {
           catheterImageUrl,
           tractionImageUrl,
           tractionCounts: { yellow: tractionPulls, red: 0 },
-          events
+          events,
+          nightModeAssist,
+          adaptiveTractionAlert
         })
       });
-      if (!response.ok) throw new Error('Failed to upload');
+      if (!response.ok) {
+        throw new Error('Image upload failed');
+      }
       advanceTo('dashboard');
       router.push('/dashboard');
     } catch (error) {
       console.error(error);
-      setStatus('Could not save, try again');
+      setStatus('Image capture failed — retry');
     } finally {
       setPending(false);
     }
@@ -71,6 +97,20 @@ export default function CapturePage() {
               onChange={(event) => setCatheterFile(event.target.files?.[0] ?? null)}
               className="w-full text-sm"
             />
+            <label className="flex items-center justify-between text-sm text-slate-700">
+              <span>Night mode assist (low-light capture)</span>
+              <input
+                type="checkbox"
+                checked={nightModeAssist}
+                onChange={(event) => setNightModeAssist(event.target.checked)}
+                className="h-5 w-5"
+              />
+            </label>
+            {nightModeAssist ? (
+              <p className="text-xs text-slate-500">
+                Night mode locks exposure and flash for dark wards. Keep the phone steady until haptic feedback confirms capture.
+              </p>
+            ) : null}
           </section>
 
           <section className="card space-y-3">
@@ -95,6 +135,20 @@ export default function CapturePage() {
                   className="rounded-xl border border-slate-200 px-3 py-2"
                 />
               </label>
+            ) : null}
+            <label className="flex items-center justify-between text-sm text-slate-700">
+              <span>Adaptive traction hardware alert</span>
+              <input
+                type="checkbox"
+                checked={adaptiveTractionAlert}
+                onChange={(event) => setAdaptiveTractionAlert(event.target.checked)}
+                className="h-5 w-5"
+              />
+            </label>
+            {adaptiveTractionAlert ? (
+              <p className="text-xs text-risk-red font-semibold">
+                Patient-driven traction device triggered. This will up-rank venous trauma risk on the dashboard.
+              </p>
             ) : null}
           </section>
 
