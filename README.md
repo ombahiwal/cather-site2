@@ -76,7 +76,7 @@ Hospital-grade, mobile-first catheter surveillance workflow built with Next.js A
 
 ## Audio consent
 
-The repo ships with short placeholder WAV files to enforce the consent workflow. Replace `public/audio/consent-en.wav` and `public/audio/consent-vernacular.wav` with hospital-approved voiceovers before clinical use.
+The repo ships with short placeholder WAV files to enforce the consent workflow. Replace `public/audio/consent-en.wav` and `public/audio/consent-kannada.wav` with hospital-approved voiceovers before clinical use.
 
 ## Testing & linting
 

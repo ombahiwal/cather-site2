@@ -6,28 +6,28 @@ import PageShell from '@/components/PageShell';
 import WorkflowGuard from '@/components/WorkflowGuard';
 import { useWorkflow } from '@/context/WorkflowContext';
 
-const sources: Record<'English' | 'Vernacular', string> = {
+const sources: Record<'English' | 'Kannada', string> = {
   English: '/audio/consent-en.wav',
-  Vernacular: '/audio/consent-vernacular.wav'
+  Kannada: '/audio/consent-kannada.wav'
 };
 
-const transcripts: Record<'English' | 'Vernacular', string> = {
+const transcripts: Record<'English' | 'Kannada', string> = {
   English:
     'You are authorizing the CathShield nursing team to capture and analyze catheter images for infection prevention. The capture does not expose your identity and can be stopped at any time if you withdraw consent.',
-  Vernacular:
-    'आप कैथशील्ड नर्सिंग टीम को कैथेटर स्थल की फोटो लेने और संक्रमण रोकथाम के लिये उसका विश्लेषण करने की अनुमति दे रहे हैं। यह रिकॉर्ड आपकी पहचान साझा नहीं करता और आप किसी भी समय सहमति वापस ले सकते हैं।'
+  Kannada:
+    'ನೀವು CathShield ನರ್ಸಿಂಗ್ ತಂಡಕ್ಕೆ ಕ್ಯಾಥೆಟರ್ ಸ್ಥಳದ ಚಿತ್ರಗಳನ್ನು ಸೆರೆಹಿಡಿದು ಸೋಂಕು ತಡೆಗಾಗಿ ವಿಶ್ಲೇಷಿಸಲು ಅನುಮತಿ ನೀಡುತ್ತಿದ್ದಾರೆ. ಈ ದಾಖಲಾತಿ ನಿಮ್ಮ ವೈಯಕ್ತಿಕ ಗುರುತನ್ನು ಬಹಿರಂಗಪಡಿಸುವುದಿಲ್ಲ ಮತ್ತು ನೀವು ಬಯಸಿದ ಕ್ಷಣದಲ್ಲಿ ಒಪ್ಪಿಗೆಯನ್ನು ಹಿಂಪಡೆಯಬಹುದು.'
 };
 
 export default function ConsentPage() {
   const router = useRouter();
   const audioRef = useRef<HTMLAudioElement>(null);
-  const [language, setLanguage] = useState<'English' | 'Vernacular'>('English');
+  const [language, setLanguage] = useState<'English' | 'Kannada'>('English');
   const [status, setStatus] = useState<'idle' | 'playing' | 'completed'>('idle');
   const [consentChecked, setConsentChecked] = useState(false);
   const [saving, setSaving] = useState(false);
   const { patientId, advanceTo } = useWorkflow();
 
-  const playAudio = async (selected: 'English' | 'Vernacular') => {
+  const playAudio = async (selected: 'English' | 'Kannada') => {
     setLanguage(selected);
     setConsentChecked(false);
     setStatus('playing');
@@ -67,10 +67,10 @@ export default function ConsentPage() {
           </button>
           <button
             type="button"
-            onClick={() => playAudio('Vernacular')}
+            onClick={() => playAudio('Kannada')}
             className="w-full rounded-full border border-slate-200 py-3 font-semibold"
           >
-            Play Vernacular Consent
+            Play Kannada Consent
           </button>
           <p className="text-sm text-slate-600">
             Status: {status === 'idle' ? 'Ready' : status === 'playing' ? 'Playing...' : 'Completed'}

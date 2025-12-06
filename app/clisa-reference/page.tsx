@@ -25,7 +25,7 @@ export default function ClisaReferencePage() {
       <section className="card space-y-3">
         <p className="text-sm text-slate-600">
           Use this table to mirror what CathShield displays on the dashboard. Scores are color-coded: green (0-1) for intact
-          sites, yellow (2-3) for early tissue change, and red (4+) when venous trauma / CLABSI-critical cues appear.
+          sites, yellow (2-3) for early tissue change, and red (4+) when venous resistance / CLABSI-critical cues appear.
         </p>
         <p className="text-xs text-slate-500">
           Guidance aligns with the content-validated CathShield safety index (SCVI ≥ .82, Cronbach&apos;s α = .82) and local CLABSI

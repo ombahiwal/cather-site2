@@ -20,6 +20,7 @@ export default function RecommendedActionCard({ band, action, title = 'Recommend
   return (
     <div className={`card ${bgMap[band]} ${frameMap[band]}`}>
       <p className="text-xs uppercase tracking-wide">{title}</p>
+      <p className="text-xs font-semibold text-slate-500">Risk band: {band.toUpperCase()}</p>
       <p className="text-base font-semibold">{action}</p>
     </div>
   );

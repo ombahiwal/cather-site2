@@ -141,7 +141,7 @@ export const calculateRiskSnapshot = (input: RiskInput) => {
   const recommendedAction = (() => {
     if (predictiveClabsiScore <= thresholds.greenMax) return 'Routine flush Q24h';
     if (predictiveClabsiScore <= thresholds.yellowMax) return 'Flush Q12h + inform MO';
-    if (predictiveClabsiScore <= thresholds.yellowMax + 2) return 'Venous trauma protocol + urgent ultrasound';
+    if (predictiveClabsiScore <= thresholds.yellowMax + 2) return 'Venous resistance protocol + urgent ultrasound';
     return 'Stop infusions + emergency MO review / sepsis protocol';
   })();
 

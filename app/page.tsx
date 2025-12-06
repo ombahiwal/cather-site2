@@ -10,7 +10,7 @@ const features = [
   },
   {
     title: 'Predictive risk + alerts',
-    detail: 'Predictive CLABSI and venous trauma bands surface green / yellow / red actions before harm.',
+    detail: 'Predictive CLABSI and venous resistance bands surface green / yellow / red actions before harm.',
     badge: 'Proactive'
   },
   {

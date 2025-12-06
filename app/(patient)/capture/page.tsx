@@ -147,7 +147,7 @@ export default function CapturePage() {
             </label>
             {adaptiveTractionAlert ? (
               <p className="text-xs text-risk-red font-semibold">
-                Patient-driven traction device triggered. This will up-rank venous trauma risk on the dashboard.
+                Patient-driven traction device triggered. This will up-rank venous resistance risk on the dashboard.
               </p>
             ) : null}
           </section>
