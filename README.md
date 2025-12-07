@@ -82,6 +82,7 @@ The repo ships with short placeholder WAV files to enforce the consent workflow.
 
 - `npm run lint` - Next.js + ESLint config.
 - `npm run db:migrate` / `npm run db:deploy` - Prisma helpers for local vs production migrations.
+- `npx tsx scripts/testCapture.ts` - Creates a throwaway patient, uploads `test_image.jpeg`, and prints the risk snapshot payload (useful smoke test for capture + Gemini fallbacks).
 
 ## Notes
 

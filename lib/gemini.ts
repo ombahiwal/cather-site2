@@ -1,6 +1,6 @@
 import type { ImageSignals } from './riskEngine';
 
-const DEFAULT_GEMINI_MODEL = 'gemini-1.5-flash-latest';
+const DEFAULT_GEMINI_MODEL = 'gemini-2.0-flash';
 const PROMPT = `You are a vascular access specialist reviewing a catheter insertion site photo.
 Score each feature from 0-3 (0 = none, 3 = severe) and respond with compact JSON only:
 {"erythema":0-3,"drainage":0-3,"ooze":0-3,"moisture":0-3,"dressingLift":0-100,"chgPatch":true|false,"maceration":true|false}`;
@@ -45,8 +45,11 @@ export async function analyzeCatheterImage(imageDataUrl: string): Promise<ImageS
     return null;
   }
 
-  const endpoint = process.env.GEMINI_API_URL ??
-    `https://generativelanguage.googleapis.com/v1beta/models/${process.env.GEMINI_MODEL ?? DEFAULT_GEMINI_MODEL}:generateContent`;
+  const model = process.env.GEMINI_MODEL ?? DEFAULT_GEMINI_MODEL;
+  const apiBase = model.includes('1.5')
+    ? 'https://generativelanguage.googleapis.com/v1'
+    : 'https://generativelanguage.googleapis.com/v1beta';
+  const endpoint = process.env.GEMINI_API_URL ?? `${apiBase}/models/${model}:generateContent`;
 
   try {
     const response = await fetch(`${endpoint}?key=${apiKey}`, {
@@ -65,7 +68,7 @@ export async function analyzeCatheterImage(imageDataUrl: string): Promise<ImageS
     });
 
     if (!response.ok) {
-      console.error('Gemini request failed', await response.text());
+      console.warn('Gemini request failed', await response.text());
       return null;
     }
 
@@ -77,7 +80,7 @@ export async function analyzeCatheterImage(imageDataUrl: string): Promise<ImageS
 
     return parseSignals(text);
   } catch (error) {
-    console.error('Gemini request error', error);
+    console.warn('Gemini request error', error);
     return null;
   }
 }
